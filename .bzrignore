@@ -1,0 +1,13 @@
+core/.classpath
+core/.project
+core/.settings
+core/.scala_dependencies
+core/lib_managed
+core/target
+
+target
+project/boot
+project/target
+project/plugins/project
+project/plugins/target
+project/strap/sbt-launch-*.jar
