@@ -21,9 +21,10 @@ object Resolvers {
 }
 
 object Dependencies {
-  val configgy = "net.lag" % "configgy" % "2.0.0" intransitive()
-  val commonsIO = "commons-io" % "commons-io" % "2.0.1"
-  val scalatest = "org.scalatest" % "scalatest_2.9.0" % "1.6.1" % "test"
+  val etb = "hr.element.etb" % "etb_2.9.0-1" % "0.1.21"
+  val configrity = "org.streum" %% "configrity" % "0.8.0"
+  val commonsIO  = "commons-io" % "commons-io" % "2.0.1"
+  val scalatest  = "org.scalatest" % "scalatest_2.9.0" % "1.6.1" % "test"
 }
 
 object FormatNazyBuild extends Build {
@@ -32,7 +33,8 @@ object FormatNazyBuild extends Build {
   import BuildSettings._
 
   val coreDeps = Seq(
-    configgy,
+    etb,
+    configrity,
     commonsIO,
     scalatest
   )

@@ -1,4 +1,4 @@
-package hr.element.util
+package hr.element.fn.util
 
 import scala.util.parsing.input.{ Position, Reader }
 

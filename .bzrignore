@@ -3,7 +3,7 @@ core/.project
 core/.settings
 core/.scala_dependencies
 core/lib_managed
-core/target
+core/.target
 
 target
 project/boot

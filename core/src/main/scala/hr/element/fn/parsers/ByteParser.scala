@@ -1,60 +1,76 @@
 package hr.element.fn.parsers
+import hr.element.fn.Imports._
 
-import scala.util.parsing.combinator._
-import hr.element.util.ByteReader
-
-import hr.element.fn.proxies._
-import ByteParticles._
-import LineBreakParticles._
-import Implicits._
-
-import java.io.File
-import org.apache.commons.io.FileUtils
-
+import scala.util.parsing.combinator.Parsers
 
 
 
 
 object ByteParser extends Parsers {
   type Elem = Option[Byte]
+  type ElemPredicate = (Elem) => Boolean
+
+
+  // Parser predicate generator functions
+  def eqFun(l: Seq[Byte]): ElemPredicate =
+    (e: Elem) => e match {
+      case Some(x) => l.contains(e.get)
+      case None => false
+    }
+  def neFun(l: Seq[Byte]): ElemPredicate =
+    (e: Elem) => e match {
+      case Some(x) => !l.contains(e.get)
+      case None => false
+    }
+
+
+  // Parser generator functions
+  def getElemOne[T <: BaseData](b: T): Parser[T] =
+    acceptSeq(b.v map(Some(_))) ^^ { _ => b }
+
+  def getElemOr[T <: BaseData](bl: Seq[T]): Parser[T] =
+    bl.map(getElemOne).reduceLeft(_ | _)
+
+  def getElemCustom(description: String, bl: Seq[BaseData], predicateGenerator: (Seq[Byte]) => ElemPredicate): Parser[Elem] =
+    elem(description, predicateGenerator(bl.flatMap(_.v)))
+
 
   // Elements
-  private def elemAny: Parser[Elem] = elem("anyElem", e => (e != Some(LF)) & (e != Some(CR)) & (e != None))
-  private def elemLF:  Parser[Elem] = elem("lfElem",  _ == Some(LF)) // \n
-  private def elemCR:  Parser[Elem] = elem("crElem",  _ == Some(CR)) // \r
-  private def elemEOF: Parser[Elem] = elem("anyElem", _ == None)
+  private def elemEOF: Parser[Elem] = elem("EOF elem", _ == None)
+  private def elemAny: Parser[Elem] = getElemCustom("any elem", C.NewlineList.values.toSeq, neFun _)
 
-  // Blocks
-  private def blockWindowsNL: Parser[Windows.type] = elemCR ~ elemLF ^^ (_ => Windows)
-  private def blockUnixNL:    Parser[Unix.type]    = elemLF          ^^ (_ => Unix)
-  private def blockMacNL:     Parser[Mac.type]     = elemCR          ^^ (_ => Mac)
-  private def blockEOF:       Parser[EOF.type]     = elemEOF         ^^ (_ => EOF)
+
+  // Element Lists
+  private def elemListNewline: Parser[LineBreakData] = getElemOr(C.NewlineList.values.toSeq)
+
 
   // Sequences
   private def seqByte: Parser[List[Option[Byte]]] = rep(elemAny)
   private def seqLine: Parser[List[Line]] = rep(breakLine)
 
+
   // Compositions
   private def lineList: Parser[List[Line]] =
-    seqLine ~ opt(endline) ~ blockEOF ^^ (e =>
+    seqLine ~ opt(endline) ~ elemEOF ^^ (e =>
       e._1._1 ::: e._1._2.toList)
   private def breakLine: Parser[Line] =
     seqByte ~ break ^^ (e =>
       new Line(e._1.map(_.get), Some(e._2)))
   private def endline: Parser[Line] =
-    seqByte ~ blockEOF ^^ (e =>
+    seqByte ~ elemEOF ^^ (e =>
       new Line(e._1.map(_.get), None))
-  private def break: Parser[LineBreakParticle] =
-    blockWindowsNL | blockUnixNL | blockMacNL
+  private def break: Parser[LineBreakData] =
+    elemListNewline
 
 
 
+  // Entry functions
   def parse(br: ByteReader): Option[List[Line]] = {
     try {
       val r = lineList(br)
-      r.successful match {
-        case true  => Some(r.get)
-        case false => None
+      r match {
+        case Success(result, _) => Some(result)
+        case NoSuccess(msg, _) => None
       }
     } catch {
       case t: Throwable => None
@@ -62,21 +78,27 @@ object ByteParser extends Parsers {
   }
 
 
-  def parseArray(data: Array[Byte]): Option[Document] = {
+  def parse(data: Array[Byte]): Option[Document] = {
     val br = new ByteReader(data)
-    parse(br).map(new Document(_))
+    parse(br).map(new MemoryDocument(getUID("MemoryDocument"), _))
   }
 
 
-  def parseFile(file: File): Option[FileDocument] = {
+  def parse(file: File): Option[FileDocument] = {
     val data = FileUtils.readFileToByteArray(file)
     val br = new ByteReader(data)
     parse(br).map(new FileDocument(file, _))
   }
 
 
-  def parseFile(path: String): Option[FileDocument] = {
+  def parse(path: String): Option[FileDocument] = {
     val file = new File(path)
-    parseFile(file)
+    parse(file)
   }
+
+
+
+  // Helpers
+  private def getUID(prefix: String) =
+    "%s-%X".format(prefix, System.currentTimeMillis)
 }
