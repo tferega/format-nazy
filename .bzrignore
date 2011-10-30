@@ -4,6 +4,7 @@ core/.settings
 core/.scala_dependencies
 core/lib_managed
 core/.target
+core/.cache
 
 target
 project/boot
