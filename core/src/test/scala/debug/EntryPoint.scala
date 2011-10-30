@@ -15,13 +15,15 @@ import hr.element.fn.main._
 object EntryPoint extends Meter {
   val Data1: Array[Byte] = "wain linija jedan\r\nmac linija dva\runix linija tri\neof linija cetri"
     .toArray.map(_.toByte)
-  val Data2: Array[Byte] = Array(95, 96, 0xF6, 0x0D, 0x0A, 100, 101, 0xF7).map(_.toByte)
+  val Data2: Array[Byte] = Array(95, 96, 0xF6, 0x0D, 0x0A, 100, 101, 0xF7, 0x32, 0x07, 0x33).map(_.toByte)
+
+  val f = new File("""/home/huitz/code/bmw/code/server/scala/akka/src/main/scala/com/instantor/bmw/countries/hr/banks/Erste.scala""")
+  val Data3: Array[Byte] = FileUtils.readFileToByteArray(f)
 
   def main(args: Array[String]) {
     val sg = new ScrutinizatorGenerator("mydoc", "MyDocument")
-    val utf8s = sg.utf8
-    val d = ByteParser.parse(Data2).get
-    val fn = new FormatNazy(sg.utf8)
+    val d = ByteParser.parse(Data3).get
+    val fn = new FormatNazy(sg.utf8, sg.character, sg.newline)
     val d1 = fn.scrutinize(d)
     println(d1.fullReport)
   }

@@ -36,21 +36,7 @@ object C {
     "GS"  -> ByteData(0x1D, "GS",  "Group Separator"),
     "RS"  -> ByteData(0x1E, "RS",  "Record Separator"),
     "US"  -> ByteData(0x1F, "US",  "Unit Separator"),
-    "DEL" -> ByteData(0x7F, "DEL", "Delete"),
-
-    "U01" -> ByteData(0xC1, "U01", "UTF-8 illegal character"),
-    "U02" -> ByteData(0xC2, "U02", "UTF-8 illegal character"),
-    "U03" -> ByteData(0xF5, "U03", "UTF-8 illegal character"),
-    "U04" -> ByteData(0xF6, "U04", "UTF-8 illegal character"),
-    "U05" -> ByteData(0xF7, "U05", "UTF-8 illegal character"),
-    "U06" -> ByteData(0xF8, "U06", "UTF-8 illegal character"),
-    "U07" -> ByteData(0xF9, "U07", "UTF-8 illegal character"),
-    "U08" -> ByteData(0xFA, "U08", "UTF-8 illegal character"),
-    "U09" -> ByteData(0xFB, "U09", "UTF-8 illegal character"),
-    "U10" -> ByteData(0xFC, "U10", "UTF-8 illegal character"),
-    "U11" -> ByteData(0xFD, "U11", "UTF-8 illegal character"),
-    "U12" -> ByteData(0xFE, "U12", "UTF-8 illegal character"),
-    "U13" -> ByteData(0xFF, "U13", "UTF-8 illegal character"))
+    "DEL" -> ByteData(0x7F, "DEL", "Delete"))
 
 
   val NewlineList = Map(
@@ -59,7 +45,7 @@ object C {
     "MAC" -> LineBreakData(B("CR").v, "MAC", "Mac OS"))
 
 
-  val AllowedNewline = "WIN"
+  val AllowedNewline = NewlineList("WIN")
 
 
   val BOMList = Seq(
@@ -111,18 +97,5 @@ object C {
     B("GS"),
     B("RS"),
     B("US"),
-    B("DEL"),
-    B("U01"),
-    B("U02"),
-    B("U03"),
-    B("U04"),
-    B("U05"),
-    B("U06"),
-    B("U07"),
-    B("U08"),
-    B("U09"),
-    B("U10"),
-    B("U11"),
-    B("U12"),
-    B("U13"))
+    B("DEL"))
 }
