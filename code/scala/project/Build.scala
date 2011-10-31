@@ -11,7 +11,11 @@ object BuildSettings {
     name          := "FormatNazy - Scala - Core",
     version       := "0.0.1",
     scalaVersion  := buildScalaVersion,
-    scalacOptions := buildScalacOptions
+    scalacOptions := buildScalacOptions,
+
+    publishMavenStyle := true,
+    publishTo         := Some("Element Private Releases" at "http://maven.element.hr/nexus/content/repositories/releases-private/"),
+    credentials += Credentials(Path.userHome / ".publish" / ".credentials")
   )
 }
 
