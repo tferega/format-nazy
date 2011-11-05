@@ -45,21 +45,21 @@ object ByteParser extends Parsers {
 
 
   // Sequences
-  private def seqByte: Parser[List[Option[Byte]]] = rep(elemAny)
+  private def seqByte: Parser[List[Elem]] = rep(elemAny)
   private def seqLine: Parser[List[Line]] = rep(breakLine)
 
 
   // Compositions
-  private def lineList: Parser[List[Line]] =
-    seqLine ~ opt(endline) ~ elemEOF ^^ (e =>
-      e._1._1 ::: e._1._2.toList)
-  private def breakLine: Parser[Line] =
+  lazy val lineList: Parser[List[Line]] =
+    seqLine ~ opt(endline) <~ elemEOF ^^ (e =>
+      e._1 ::: e._2.toList)
+  lazy val breakLine: Parser[Line] =
     seqByte ~ break ^^ (e =>
       new Line(e._1.map(_.get), Some(e._2)))
-  private def endline: Parser[Line] =
-    seqByte ~ elemEOF ^^ (e =>
-      new Line(e._1.map(_.get), None))
-  private def break: Parser[LineBreakData] =
+  lazy val endline: Parser[Line] =
+    seqByte <~ elemEOF ^^ (e =>
+      new Line(e.map(_.get), None))
+  lazy val break: Parser[LineBreakData] =
     elemListNewline
 
 

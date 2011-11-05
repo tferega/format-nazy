@@ -12,33 +12,74 @@ import hr.element.fn._
 import hr.element.fn.main._
 
 
-object EntryPoint extends Meter {
-  val Data1: Array[Byte] = "wain linija jedan\r\nmac linija dva\runix linija tri\neof linija cetri"
-    .toArray.map(_.toByte)
-  val Data2: Array[Byte] = Array(95, 96, 0xF6, 0x0D, 0x0A, 100, 101, 0xF7, 0x32, 0x07, 0x33).map(_.toByte)
 
-  val f = new File("""/home/huitz/code/bmw/code/server/scala/akka/src/main/scala/com/instantor/bmw/countries/hr/banks/Erste.scala""")
-  val Data3: Array[Byte] = FileUtils.readFileToByteArray(f)
+sealed trait Return {
+  val num: Int
+  val msg: String
+  val reportOpt: Option[Report]
 
+  def exit {
+    println(msg)
+    System.exit(num)
+  }
+}
+object Return
+{
+  case class  Valid(report: Report) extends Return { val reportOpt = Some(report); val num = 0; val msg = "Successful" }
+  case object InvalidArguments  extends Return { val reportOpt = None; val num = 1; val msg = "This program takes exactly one argument." }
+  case object InvalidFile       extends Return { val reportOpt = None; val num = 2; val msg = "File not found." }
+  case object ParsingFailed     extends Return { val reportOpt = None; val num = 3; val msg = "This program takes exactly one argument." }
+}
+
+
+
+object EntryPoint {
   def main(args: Array[String]) {
-    val sg = new ScrutinizatorGenerator("mydoc", "MyDocument")
-    val d = ByteParser.parse(Data3).get
-    val fn = new FormatNazy(sg.utf8, sg.character, sg.newline)
-    val d1 = fn.scrutinize(d)
-    println(d1.fullReport)
+    println("Format nazy starting...")
+    val ret = run(args)
+
+    for (r <- ret.reportOpt if r.hasInfractions) {
+      println(r.fullReport)
+    }
+
+    ret.exit
   }
 
-//  def stats(path: String) {
-//    val size = FileUtils.sizeOf(new File(path))
-//    val t = meter(size, initCount = 5, repeatCount = 20) {
-//      val d = ByteParser.parseFile(path)
-//      val r = FormatNazy.scrutinize(d.get)
-//      r.newDocument.overwrite
-//    }
-//    println(t)
-//  }
 
-  def prettyPrint(data: Array[Byte]) {
-    println(ByteParser.parse(Data2))
+  def run(args: Array[String]): Return = {
+    args match {
+      case Array(filename) =>
+        runFilename(filename)
+      case _ =>
+        Return.InvalidArguments
+    }
+  }
+
+  def runFilename(filename: String): Return = {
+    val file = new File(filename)
+    if (!file.exists() || !file.canRead()) {
+      Return.InvalidFile
+    } else {
+      runFile(file)
+    }
+  }
+
+
+  def runFile(file: File): Return = {
+    val dOpt = ByteParser.parse(file)
+    dOpt match {
+      case Some(d) =>
+        runDocument(d)
+      case None =>
+        Return.ParsingFailed
+    }
+  }
+
+
+  def runDocument(d: Document): Return = {
+    val sg = new ScrutinizatorGenerator(d.shortName, d.name)
+    val fn = new FormatNazy(sg.utf8, sg.character, sg.newline)
+    val r = fn.scrutinize(d)
+    Return.Valid(r)
   }
 }
