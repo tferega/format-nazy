@@ -9,7 +9,7 @@ object BuildSettings {
   val buildSettingsCore = Defaults.defaultSettings ++ Seq(
     organization  := buildOrganization,
     name          := "FormatNazy",
-    version       := "0.0.1",
+    version       := "0.0.3",
     scalaVersion  := buildScalaVersion,
     scalacOptions := buildScalacOptions,
     externalResolvers <<= resolvers map { rs =>

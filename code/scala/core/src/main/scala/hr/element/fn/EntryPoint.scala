@@ -1,15 +1,8 @@
-package debug
+package hr.element.fn
+import hr.element.fn.Imports._
 
-import java.io.File
-import hr.element.fn.parsers._
-import hr.element.util._
-
-import java.io.File
-import org.apache.commons.io.FileUtils
-
-import hr.element.fn._
-
-import hr.element.fn.main._
+import hr.element.fn.main.{ ScrutinizatorGenerator, FormatNazy }
+import hr.element.fn.parsers.{ ByteParser, Document }
 
 
 

@@ -32,6 +32,8 @@ trait TypeImports {
   type Level          = hr.element.fn.main.Level
 
   type ByteReader     = hr.element.fn.util.ByteReader
+
+  type Report         = hr.element.fn.main.Report
 }
 
 
