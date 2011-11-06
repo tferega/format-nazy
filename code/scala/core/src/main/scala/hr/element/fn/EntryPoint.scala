@@ -6,22 +6,21 @@ import hr.element.fn.parsers.{ ByteParser, Document }
 
 
 
-sealed trait Return {
+sealed trait Error {
   val num: Int
   val msg: String
-  val reportOpt: Option[Report]
+  val arg: String
 
-  def exit {
-    println(msg)
-    System.exit(num)
+  def exit: Nothing = {
+    println(msg format arg)
+    sys.exit(num)
   }
 }
-object Return
+object Error
 {
-  case class  Valid(report: Report) extends Return { val reportOpt = Some(report); val num = 0; val msg = "Successful" }
-  case object InvalidArguments  extends Return { val reportOpt = None; val num = 1; val msg = "This program takes exactly one argument." }
-  case object InvalidFile       extends Return { val reportOpt = None; val num = 2; val msg = "File not found." }
-  case object ParsingFailed     extends Return { val reportOpt = None; val num = 3; val msg = "This program takes exactly one argument." }
+  case class Unknown(val err: String, val arg: String) extends Error { val num = 1; val msg = "An unknown error occured while processing %%s (%s)" format err }
+  case class InvalidFile(val arg: String) extends Error { val num = 1; val msg = "File does not exists or cannot be read: %s" }
+  case class ParsingFailed(val arg: String) extends Error { val num = 2; val msg = "Error while parsing file: %s" }
 }
 
 
@@ -29,50 +28,58 @@ object Return
 object EntryPoint {
   def main(args: Array[String]) {
     println("Format nazy starting...")
-    val ret = run(args)
+    val retList = run(args)
 
-    for (r <- ret.reportOpt if r.hasInfractions) {
-      println(r.fullReport)
+    val problemList = retList.filter(_.hasInfractions)
+
+    if (problemList.isEmpty) {
+      println("No problems found")
+    } else {
+      problemList foreach { r =>
+        println("Document: "+ r.document.name)
+        println(r.fullReport)
+      }
     }
 
-    ret.exit
+    println("FormatNazy finished successfully")
+    sys.exit(0)
   }
 
 
-  def run(args: Array[String]): Return = {
-    args match {
-      case Array(filename) =>
-        runFilename(filename)
-      case _ =>
-        Return.InvalidArguments
-    }
+  def run(args: Array[String]): Seq[Report] = {
+    args.map(runFilename)
   }
 
-  def runFilename(filename: String): Return = {
+
+  def runFilename(filename: String): Report = {
     val file = new File(filename)
     if (!file.exists() || !file.canRead()) {
-      Return.InvalidFile
+      Error.InvalidFile(filename).exit
     } else {
-      runFile(file)
+      try {
+        runFile(file)
+      } catch {
+        case t: Throwable =>
+          Error.Unknown(t.toString, filename).exit
+      }
     }
   }
 
 
-  def runFile(file: File): Return = {
+  def runFile(file: File): Report = {
     val dOpt = ByteParser.parse(file)
     dOpt match {
       case Some(d) =>
         runDocument(d)
       case None =>
-        Return.ParsingFailed
+        Error.ParsingFailed(file.toString).exit
     }
   }
 
 
-  def runDocument(d: Document): Return = {
+  def runDocument(d: Document): Report = {
     val sg = new ScrutinizatorGenerator(d.shortName, d.name)
     val fn = new FormatNazy(sg.utf8, sg.character, sg.newline)
-    val r = fn.scrutinize(d)
-    Return.Valid(r)
+    fn.scrutinize(d)
   }
 }
