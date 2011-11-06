@@ -6,25 +6,6 @@ import hr.element.fn.parsers.{ ByteParser, Document }
 
 
 
-sealed trait Error {
-  val num: Int
-  val msg: String
-  val arg: String
-
-  def exit: Nothing = {
-    println(msg format arg)
-    sys.exit(num)
-  }
-}
-object Error
-{
-  case class Unknown(val err: String, val arg: String) extends Error { val num = 1; val msg = "An unknown error occured while processing %%s (%s)" format err }
-  case class InvalidFile(val arg: String) extends Error { val num = 1; val msg = "File does not exists or cannot be read: %s" }
-  case class ParsingFailed(val arg: String) extends Error { val num = 2; val msg = "Error while parsing file: %s" }
-}
-
-
-
 object EntryPoint {
   def main(args: Array[String]) {
     println("Format nazy starting...")
@@ -32,17 +13,21 @@ object EntryPoint {
 
     val problemList = retList.filter(_.hasInfractions)
 
-    if (problemList.isEmpty) {
+    val extCode = if (problemList.isEmpty) {
       println("No problems found")
+      0
     } else {
       problemList foreach { r =>
+        println; println;
+        println("########################################")
         println("Document: "+ r.document.name)
         println(r.fullReport)
       }
+      1
     }
 
     println("FormatNazy finished successfully")
-    sys.exit(0)
+    sys.exit(extCode)
   }
 
 
@@ -52,16 +37,13 @@ object EntryPoint {
 
 
   def runFilename(filename: String): Report = {
-    val file = new File(filename)
-    if (!file.exists() || !file.canRead()) {
-      Error.InvalidFile(filename).exit
-    } else {
-      try {
-        runFile(file)
-      } catch {
-        case t: Throwable =>
-          Error.Unknown(t.toString, filename).exit
-      }
+    try {
+      val file = new File(filename)
+      runFile(file)
+    } catch {
+      case t: Throwable =>
+        println("An error occured while processing %s (%s)".format(filename, t.toString))
+        sys.exit(2)
     }
   }
 
@@ -72,7 +54,8 @@ object EntryPoint {
       case Some(d) =>
         runDocument(d)
       case None =>
-        Error.ParsingFailed(file.toString).exit
+        println("An error occured while parsing file %s".format(file.toString))
+        sys.exit(3)
     }
   }
 
