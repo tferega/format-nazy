@@ -1,17 +1,27 @@
 import sbt._
 import Keys._
+import sbtassembly.Plugin._
+import AssemblyKeys._
+
+
+
+object ProjectInfo {
+  val Organization = "hr.element.etb"
+  val Name = "FormatNazy"
+  val PublishName = Name.toLowerCase
+  val Version = "0.0.4"
+  val ScalaVersion = "2.9.1"
+}
+
 
 object BuildSettings {
-  val buildOrganization = "hr.element.etb"
-  val buildScalaVersion = "2.9.1"
-  val buildScalacOptions = Seq("-deprecation", "-Yrepl-sync")
-
   val buildSettingsCore = Defaults.defaultSettings ++ Seq(
-    organization  := buildOrganization,
-    name          := "FormatNazy",
-    version       := "0.0.3",
-    scalaVersion  := buildScalaVersion,
-    scalacOptions := buildScalacOptions,
+    organization  := ProjectInfo.Organization,
+    name          := ProjectInfo.Name,
+    version       := ProjectInfo.Version,
+    scalaVersion  := ProjectInfo.ScalaVersion,
+    scalacOptions := Seq("-deprecation", "-Yrepl-sync"),
+
     externalResolvers <<= resolvers map { rs =>
       Resolver.withDefaultResolvers(rs, mavenCentral = false, scalaTools = false)
     },
@@ -19,8 +29,14 @@ object BuildSettings {
     publishTo         := Some("Element Private Releases" at "http://maven.element.hr/nexus/content/repositories/releases-private/"),
     credentials += Credentials(Path.userHome / ".publish" / ".credentials")
   )
-}
 
+  val assemblySettingsCore = assemblySettings ++ Seq(
+    jarName := ProjectInfo.PublishName +"_"+ ProjectInfo.ScalaVersion +"-"+ ProjectInfo.Version +"-assembly.jar"
+  )
+
+  val artifactSettingsCore =
+    addArtifact(Artifact(ProjectInfo.PublishName, "assembly"), sbtassembly.Plugin.AssemblyKeys.assembly)
+}
 
 
 object Resolvers {
@@ -29,7 +45,6 @@ object Resolvers {
 
   val eleResolvers = Seq(elementPublic)
 }
-
 
 
 object Dependencies {
@@ -42,7 +57,6 @@ object Dependencies {
 
   val scalatest = "org.scalatest" %% "scalatest" % "1.6.1" % "test"
 }
-
 
 
 object FormatNazyBuild extends Build {
@@ -59,9 +73,13 @@ object FormatNazyBuild extends Build {
   lazy val core = Project(
     "FN",
     file("core"),
-    settings = buildSettingsCore ++ Seq(
-      resolvers := eleResolvers,
-      libraryDependencies := CoreDeps
-    )
+    settings =
+      buildSettingsCore ++
+      assemblySettingsCore ++
+      artifactSettingsCore ++
+      Seq(
+        resolvers := eleResolvers,
+        libraryDependencies := CoreDeps
+      )
   )
 }
