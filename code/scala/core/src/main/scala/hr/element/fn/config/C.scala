@@ -45,7 +45,7 @@ object C {
     "MAC" -> LineBreakData(B("CR").v, "MAC", "Mac OS"))
 
 
-  val AllowedNewline = NewlineList("WIN")
+  val AllowedNewline = Seq(NewlineList("WIN"), NewlineList("NIX"))
 
 
   val BOMList = Seq(

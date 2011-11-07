@@ -54,7 +54,7 @@ class ScrutinizatorGenerator(documentShortName: String, documentLongName: String
 
   private lazy val newlineFun: ((Line) => Seq[NewlineInfraction]) = (l: Line) => {
     l.lineBreak match {
-      case Some(lb) if lb != C.AllowedNewline => Seq(new NewlineInfraction(documentShortName, documentLongName, 0, l.getBody))
+      case Some(lb) if !C.AllowedNewline.contains(lb) => Seq(new NewlineInfraction(documentShortName, documentLongName, 0, l.getBody))
       case _ => Seq.empty
     }
   }
