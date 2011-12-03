@@ -1,5 +1,5 @@
 package hr.element.fn.main
-import hr.element.fn.Imports._
+//import hr.element.fn.Imports._
 
 
 
@@ -7,7 +7,7 @@ sealed trait Level {
   import Level._
 
   val severity: Int
-  val description = getDescription(severity)
+  lazy val description = getDescription(severity)
 }
 object Level {
   def getDescription(severity: Int) = severity match {
@@ -27,40 +27,38 @@ object Level {
 
 abstract class InfractionBase {
   val description: String
-  val documentShortName: String
-  val documentLongName: String
 
   val level: Level
 
-  val quickReport: String
-  val fullReport: String
+  def quickReport(name: String): String
+  def fullReport(name: String): String
 }
 
 
 
 abstract class DocumentInfraction extends InfractionBase {
-  lazy val quickReport = "%s in document %s: %s".format(level.description, documentShortName, description)
-  lazy val fullReport = "%s in document %s: %s".format(level.description, documentLongName, description)
+  def quickReport(name: String) = "%s in document %s: %s".format(level.description, name, description)
+  def fullReport(name: String)  = "%s in document %s: %s".format(level.description, name, description)
 }
 
 
 
 abstract class LineInfraction extends InfractionBase {
-  val linNum: Int
+  val rowNum: Int
   val line: String
 
-  lazy val quickReport = "%s on line %d in document %s: %s".format(level.description, linNum, documentShortName, description)
-  lazy val fullReport = "%s %s:%d: %s\n%1$s %s".format(level.description, documentLongName, linNum, description, line)
+  def quickReport(name: String) = "%s on line %d in document %s: %s".format(level.description, rowNum, name, description)
+  def fullReport(name: String)  = "%s %s:%d: %s\n%1$s %s".format(level.description, name, rowNum, description, line)
 }
 
 
 
 abstract class ByteInfraction extends InfractionBase {
-  val linNum: Int
+  val rowNum: Int
   val colNum: Int
   val line: String
 
   private def getReportPadding = " "*(colNum-1)
-  lazy val quickReport = "%s on line %d at column %d in document %s: %s".format(level.description, linNum, colNum, documentShortName, description)
-  lazy val fullReport = "%s %s:%d: %s\n%1$s %s\n%1$s %s^".format(level.description, documentLongName, linNum, description, line, getReportPadding)
+  def quickReport(name: String) = "%s on line %d at column %d in document %s: %s".format(level.description, rowNum, colNum, name, description)
+  def fullReport(name: String)  = "%s %s:%d: %s\n%1$s %s\n%1$s %s^".format(level.description, name, rowNum, description, line, getReportPadding)
 }

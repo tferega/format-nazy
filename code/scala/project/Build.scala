@@ -9,7 +9,7 @@ object ProjectInfo {
   val Organization = "hr.element.etb"
   val Name = "FormatNazy"
   val PublishName = Name.toLowerCase
-  val Version = "0.0.7"
+  val Version = "0.0.8"
   val ScalaVersion = "2.9.1"
 }
 
@@ -48,7 +48,7 @@ object Resolvers {
 
 
 object Dependencies {
-  val etb = "hr.element.etb" % "etb_2.9.0-1" % "0.1.21"
+  val etb = "hr.element.etb" % "etb_2.9.1" % "0.1.22"
   val configrity = "org.streum" %% "configrity" % "0.8.0"
   val commons = Seq(
     "commons-io" % "commons-io" % "2.0.1",

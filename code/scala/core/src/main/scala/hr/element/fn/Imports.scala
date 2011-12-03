@@ -1,3 +1,4 @@
+/*
 package hr.element.fn
 //import hr.element.fn.Imports._
 
@@ -19,11 +20,6 @@ trait Imports
 // For classes
 trait TypeImports {
   type File = java.io.File
-
-  type BaseData       = hr.element.fn.config.BaseData
-  type BOMData        = hr.element.fn.config.BOMData
-  type ByteData       = hr.element.fn.config.ByteData
-  type LineBreakData  = hr.element.fn.config.LineBreakData
 
   type Line           = hr.element.fn.parsers.Line
   type Document       = hr.element.fn.parsers.Document
@@ -70,3 +66,4 @@ object FileUtilsWrapper extends {
   def cleanDirectory(file: Imports.File)                                    = FileUtils.cleanDirectory(file)
   def readFileToByteArray(file: Imports.File)                               = FileUtils.readFileToByteArray(file)
 }
+*/

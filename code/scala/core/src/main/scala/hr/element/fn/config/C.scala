@@ -1,3 +1,4 @@
+/*
 package hr.element.fn.config
 
 
@@ -99,3 +100,4 @@ object C {
     B("US"),
     B("DEL"))
 }
+*/

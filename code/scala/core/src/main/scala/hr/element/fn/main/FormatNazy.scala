@@ -1,7 +1,8 @@
 package hr.element.fn.main
-import hr.element.fn.Imports._
 
 import hr.element.fn.parsers.Line
+
+
 
 object SC {
   type L = SC[Line]
@@ -16,6 +17,7 @@ class SC[B](val body: B, val infractionList: Seq[InfractionBase]) {
 }
 
 
+
 sealed trait ScrutinizatorLike
 abstract class ScrutinizatorBase[B](scrutinizator: (B) => Seq[InfractionBase]) extends ScrutinizatorLike {
   def apply(in: SC[B]): SC[B] = {
@@ -26,6 +28,7 @@ abstract class ScrutinizatorBase[B](scrutinizator: (B) => Seq[InfractionBase]) e
 
 class LineScrutinizator(val scrutinizator: (Line) => Seq[InfractionBase]) extends ScrutinizatorBase(scrutinizator)
 class DocumentScrutinizator(val scrutinizator: (Document) => Seq[InfractionBase]) extends ScrutinizatorBase(scrutinizator)
+
 
 
 object FormatNazy {
@@ -47,7 +50,8 @@ object FormatNazy {
 }
 
 
-class FormatNazy(scrutinizatorList: ScrutinizatorBase[_]*) {
+
+class FormatNazy(scrutinizatorList: ScrutinizatorLike*) {
   import FormatNazy._
 
   val lineScrutinizatorList: Seq[LineScrutinizator] =
