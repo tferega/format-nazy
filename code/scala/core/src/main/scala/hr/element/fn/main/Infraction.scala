@@ -1,6 +1,5 @@
 package hr.element.fn.main
-
-import hr.element.fn.parsers.Line
+import hr.element.fn.Imports._
 
 
 
@@ -65,12 +64,12 @@ abstract class LineInfraction extends InfractionBase[Line] {
 
 
 
-abstract class ByteInfraction extends InfractionBase[Byte] {
+abstract class ByteInfraction extends InfractionBase[Line] {
   val rowNum: Int
   val colNum: Int
   val line: String
 
-  private def getReportPadding = " "*(colNum-1)
+  private def getReportPadding = " " * colNum
   def quickReport(name: String) = "%s on line %d at column %d in document %s: %s".format(level.description, rowNum, colNum, name, description)
   def fullReport(name: String)  = "%s %s:%d: %s\n%1$s %s\n%1$s %s^".format(level.description, name, rowNum, description, line, getReportPadding)
 }

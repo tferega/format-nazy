@@ -1,6 +1,5 @@
 package hr.element.fn.main
-
-import hr.element.fn.parsers.Line
+import hr.element.fn.Imports._
 
 
 

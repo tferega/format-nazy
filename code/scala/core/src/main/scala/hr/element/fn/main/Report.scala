@@ -1,7 +1,5 @@
 package hr.element.fn.main
 
-import hr.element.fn.parsers._
-
 
 
 object Report {

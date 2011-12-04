@@ -1,8 +1,5 @@
 package hr.element.fn.main
-import hr.element.fn.config._
-
-import hr.element.fn.parsers.{ Line, Newline }
-import hr.element.fn.parsers.Newline._
+import hr.element.fn.Imports._
 
 import java.nio.ByteBuffer
 import java.nio.charset.{ Charset, CharsetDecoder }
@@ -18,23 +15,22 @@ class EncodingInfraction(val rowNum: Int, val line: String) extends LineInfracti
   val level = Level.Error
 }
 
-class CharacterInfraction(val rowNum: Int, val line: String) extends LineInfraction {
-  val description = "Invalid character!"
+class CharacterInfraction(val b: Byte, val rowNum: Int, val colNum: Int, val line: String) extends ByteInfraction {
+  val description = "Invalid character (0x%02X)!" format b
   val level = Level.Error
 }
 
-class NewlineInfraction(val rowNum: Int, val line: String) extends LineInfraction {
-  val description = "Invalid newline!"
+class NewlineInfraction(val newline: Newline, val rowNum: Int, val line: String) extends LineInfraction {
+  val description = "Invalid newline (%s)!" format newline
   val level = Level.Error
 }
 
 
 
 class ScrutinizatorGenerator(sc: ScrutinizatorConfig) {
-  type BasicScrutinizatorFunction[T] = T => Seq[InfractionBase[T]]
-  type DocumentBSF = BasicScrutinizatorFunction[Document]
-  type LineBSF = BasicScrutinizatorFunction[Line]
-  type ByteBSF = BasicScrutinizatorFunction[Byte]
+  type ScrutinizatorFunction[T, I] = T => Seq[InfractionBase[I]]
+  type DocumentSF = ScrutinizatorFunction[Document, Document]
+  type LineSF = ScrutinizatorFunction[Line, Line]
 
   val Encoding = "UTF-8"
   val Decoder = Charset.availableCharsets.get(Encoding)
@@ -47,31 +43,33 @@ class ScrutinizatorGenerator(sc: ScrutinizatorConfig) {
 
 
 
-  private lazy val utf8Fun: LineBSF = (l) => {
+  private lazy val utf8Fun: LineSF = (l) => {
     try {
       val decoder = Decoder.newDecoder
       decoder.decode(ByteBuffer.wrap(l.body.toArray));
       EncodingInfraction.emptySeq
     } catch  {
       case t: Throwable =>
-        Seq(new EncodingInfraction(l.row, l.toString))
+        Seq(new EncodingInfraction(l.row, l.strBody))
     }
   }
 
 
-  private lazy val characterFun: LineBSF = (l) => {
-    l.body.collect {
-      case x if !sc.characterPredicate(x) => new CharacterInfraction(l.row, l.toString)
-    }
+  private lazy val characterFun: LineSF = (l) => {
+    for {
+      col <- 0 until l.body.size
+      b = l.body(col)
+      if !sc.characterPredicate(b)
+    } yield (new CharacterInfraction(b, l.row, col, l.strBody))
   }
 
 
-  private lazy val newlineFun: LineBSF = (l) => {
+  private lazy val newlineFun: LineSF = (l) => {
     if (l.newline == Newline.EOF) {
       Seq.empty
     } else {
       sc.newlinePredicate(l.newline) match {
-        case false => Seq(new NewlineInfraction(l.row, l.toString))
+        case false => Seq(new NewlineInfraction(l.newline, l.row, l.strBody))
         case true  => Seq.empty
       }
     }

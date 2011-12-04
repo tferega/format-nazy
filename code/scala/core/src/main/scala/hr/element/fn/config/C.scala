@@ -4,13 +4,13 @@ import hr.element.fn.parsers.Newline
 
 
 
-object ScrutinizatorConfig{
+object ScrutinizatorConfig {
   import Newline._
 
   def getDefaultByNewlineList(newlineList: Newline*) =
     new ScrutinizatorConfig(
       newlineList.contains(_),
-      _ >= 0x20
+      e => !(e >= 0x00 && e < 0x20)
   )
 
   val ScWin = getDefaultByNewlineList(WIN)

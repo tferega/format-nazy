@@ -7,7 +7,7 @@ import scala.util.parsing.combinator.Parsers
 
 
 
-object ByteParser extends Parsers {
+class ByteParser(br: ByteReader) extends Parsers {
   // Some helpful imports.
   import Bytes._
   import Newline._
@@ -18,6 +18,9 @@ object ByteParser extends Parsers {
   // Helper method used breakLine and endLine blocks to convert a list of Elem-s to an IndexedSeq of Byte-s.
   private implicit def impaleElemList2ISeq(el: List[Elem]): IndexedSeq[Byte] =
     el.map(_.get).toIndexedSeq
+
+  // Mutabibality!!!
+  private var lineRow = 0
 
 
 
@@ -62,24 +65,28 @@ object ByteParser extends Parsers {
   /** ###############################
    *  ##### Parser Compositions #####
    *  ############################### */
-  // Any of the Newline blocks.
-  private lazy val break: Parser[Newline] =
-    blockWIN | blockNIX | blockMAC
+    // Any of the Newline blocks.
+    private lazy val break: Parser[Newline] =
+      blockWIN | blockNIX | blockMAC
 
-  // A line that ends with a Newline block.
-  private lazy val breakLine: Parser[Line] =
-    seqByte ~ break ^^ (e =>
-      new Line(0, e._1, e._2))
+    // A line that ends with a Newline block.
+    private lazy val breakLine: Parser[Line] =
+      seqByte ~ break ^^ { e =>
+        lineRow += 1
+        new Line(lineRow, e._1, e._2)
+      }
 
-  // A line does not end with a Newline block (last byte in the line is the lasy byte of the input stream).
-  private lazy val endline: Parser[Line] =
-    seqByte ~ blockEOF ^^ (e =>
-      new Line(0, e._1, e._2))
+    // A line does not end with a Newline block (last byte in the line is the lasy byte of the input stream).
+    private lazy val endline: Parser[Line] =
+      seqByte ~ blockEOF ^^ { e =>
+        lineRow += 1
+        new Line(lineRow, e._1, e._2)
+      }
 
-  // An entire input stream (a list of breakLines with an optional endLine at the end).
-  private lazy val lineList: Parser[IndexedSeq[Line]] =
-    seqLine ~ opt(endline) <~ elemEOF ^^ (e =>
-      e._1.toIndexedSeq ++ e._2)
+    // An entire input stream (a list of breakLines with an optional endLine at the end).
+    private lazy val lineList: Parser[IndexedSeq[Line]] =
+      seqLine ~ opt(endline) <~ elemEOF ^^ (e =>
+        e._1.toIndexedSeq ++ e._2)
 
 
 
@@ -88,14 +95,14 @@ object ByteParser extends Parsers {
    *  ##### ENTRY FUNCTIONS #####
    *  ########################### */
   // Does the actual parsing.
-  private def doParse(br: ByteReader): ParseResult[IndexedSeq[Line]] = {
+  private def doParse(): ParseResult[IndexedSeq[Line]] = {
     lineList(br)
   }
 
 
   // Main (and only) entry function.
-  def parse(br: ByteReader): IndexedSeq[Line] = {
-    val r = doParse(br)
+  def parse(): IndexedSeq[Line] = {
+    val r = doParse()
     r match {
       case Success(result, _) => result
       case NoSuccess(msg, _)  => throw new ParsingFailedException(msg)

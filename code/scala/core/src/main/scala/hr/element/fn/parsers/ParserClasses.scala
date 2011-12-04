@@ -24,7 +24,6 @@ object Newline {
 
 
 class Line(val row: Int, val body: IndexedSeq[Byte], val newline: Newline) {
-//  println("[%03d]: %s".format(Thread.currentThread.getId, strBody))
   lazy val strBody      = new String(body.toArray, "UTF-8")
   lazy val byteCount    = body.length + newline.bytes.length
   lazy val toByteArray  = body.toArray ++ newline.bytes

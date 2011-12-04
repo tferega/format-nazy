@@ -1,11 +1,7 @@
 package hr.element.fn.main
+import hr.element.fn.Imports._
 
-import hr.element.fn.parsers.Line
-
-import java.io.File
 import java.util.UUID
-
-import org.apache.commons.io.FileUtils
 
 
 
@@ -32,12 +28,4 @@ class MemoryDocument(val name: String = UUID.randomUUID.toString, body: Seq[Line
 class FileDocument(val location: File, body: Seq[Line]) extends Document(body) {
   val name = location.getAbsolutePath
   val shortName = location.getName
-
-  def write(file: File) {
-    FileUtils.writeByteArrayToFile(file, toByteArray)
-  }
-
-  def overwrite {
-    write(location)
-  }
 }
