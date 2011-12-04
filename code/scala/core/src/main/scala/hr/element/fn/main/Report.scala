@@ -4,7 +4,7 @@ import hr.element.fn.parsers._
 
 
 
-class Report(val document: Document, val infractionList: Seq[InfractionBase]) {
+class Report(val document: Document, val infractionList: Seq[InfractionBase[_]]) {
   lazy val hasInfractions  = !infractionList.isEmpty
   lazy val highestLevel = infractionList.map(_.level.severity).max
 

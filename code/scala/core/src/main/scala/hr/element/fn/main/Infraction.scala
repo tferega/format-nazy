@@ -1,5 +1,6 @@
 package hr.element.fn.main
-//import hr.element.fn.Imports._
+
+import hr.element.fn.parsers.Line
 
 
 
@@ -25,7 +26,18 @@ object Level {
 
 
 
-abstract class InfractionBase {
+sealed abstract class InfractionType[T]
+object InfractionType {
+  import hr.element.fn.main.{ Document => D }
+  import hr.element.fn.parsers.{ Line => L }
+  import scala.{ Byte => B }
+  implicit object Document extends InfractionType[D]
+  implicit object Line extends InfractionType[L]
+  implicit object Byte extends InfractionType[B]
+}
+
+
+abstract class InfractionBase[T: InfractionType] {
   val description: String
 
   val level: Level
@@ -36,14 +48,14 @@ abstract class InfractionBase {
 
 
 
-abstract class DocumentInfraction extends InfractionBase {
+abstract class DocumentInfraction extends InfractionBase[Document] {
   def quickReport(name: String) = "%s in document %s: %s".format(level.description, name, description)
   def fullReport(name: String)  = "%s in document %s: %s".format(level.description, name, description)
 }
 
 
 
-abstract class LineInfraction extends InfractionBase {
+abstract class LineInfraction extends InfractionBase[Line] {
   val rowNum: Int
   val line: String
 
@@ -53,7 +65,7 @@ abstract class LineInfraction extends InfractionBase {
 
 
 
-abstract class ByteInfraction extends InfractionBase {
+abstract class ByteInfraction extends InfractionBase[Byte] {
   val rowNum: Int
   val colNum: Int
   val line: String
