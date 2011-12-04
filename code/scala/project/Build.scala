@@ -9,7 +9,7 @@ object ProjectInfo {
   val Organization = "hr.element.etb"
   val Name = "FormatNazy"
   val PublishName = Name.toLowerCase
-  val Version = "0.0.8"
+  val Version = "0.1.0"
   val ScalaVersion = "2.9.1"
 }
 
