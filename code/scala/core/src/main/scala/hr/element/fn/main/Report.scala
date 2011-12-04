@@ -4,6 +4,13 @@ import hr.element.fn.parsers._
 
 
 
+object Report {
+  def empty(document: Document) =
+    new Report(document, Seq.empty)
+}
+
+
+
 class Report(val document: Document, val infractionList: Seq[InfractionBase[_]]) {
   lazy val hasInfractions  = !infractionList.isEmpty
   lazy val highestLevel = infractionList.map(_.level.severity).max
@@ -11,7 +18,7 @@ class Report(val document: Document, val infractionList: Seq[InfractionBase[_]])
   private lazy val baseLevelDescription =
     Level.getDescription(highestLevel)
   private lazy val baseQuickReport =
-    infractionList.map(_.quickReport(document.shortName))
+    infractionList.map(_.quickReport(document.shortName)).mkString("\n")
   private lazy val baseFullReport =
     infractionList.map(_.fullReport(document.name)).mkString("\n")
 

@@ -1,6 +1,7 @@
 package hr.element.fn.main
+import hr.element.fn.config._
 
-import hr.element.fn.parsers.Line
+import hr.element.fn.parsers.{ Line, Newline }
 import hr.element.fn.parsers.Newline._
 
 import java.nio.ByteBuffer
@@ -29,21 +30,14 @@ class NewlineInfraction(val rowNum: Int, val line: String) extends LineInfractio
 
 
 
-class ScrutinizatorGenerator() {
-  val Encoding = "UTF-8"
-  val Decoder = Charset.availableCharsets.get(Encoding)
-
-
-
+class ScrutinizatorGenerator(sc: ScrutinizatorConfig) {
   type BasicScrutinizatorFunction[T] = T => Seq[InfractionBase[T]]
   type DocumentBSF = BasicScrutinizatorFunction[Document]
   type LineBSF = BasicScrutinizatorFunction[Line]
   type ByteBSF = BasicScrutinizatorFunction[Byte]
 
-  type ArgumentedScrutinizatorFunction[P, T] = (P => Boolean, T) => Seq[InfractionBase[T]]
-  type DocumentASF[P] = ArgumentedScrutinizatorFunction[P, Document]
-  type LineASF[P] = ArgumentedScrutinizatorFunction[P, Line]
-  type ByteASF[P] = ArgumentedScrutinizatorFunction[P, Byte]
+  val Encoding = "UTF-8"
+  val Decoder = Charset.availableCharsets.get(Encoding)
 
 
 
@@ -60,30 +54,26 @@ class ScrutinizatorGenerator() {
       EncodingInfraction.emptySeq
     } catch  {
       case t: Throwable =>
-        Seq(new EncodingInfraction(l.row, l.strBody))
+        Seq(new EncodingInfraction(l.row, l.toString))
     }
   }
 
 
   private lazy val characterFun: LineBSF = (l) => {
     l.body.collect {
-      case x if x == '\t' => new CharacterInfraction(l.row, l.strBody)
+      case x if !sc.characterPredicate(x) => new CharacterInfraction(l.row, l.toString)
     }
   }
 
 
   private lazy val newlineFun: LineBSF = (l) => {
-    l.newline match {
-      case MAC => Seq(new NewlineInfraction(l.row, l.strBody))
-      case _ => Seq.empty
-    }
-  }
-
-
-
-  private lazy val t: LineASF[Byte] = (b, l) => {
-    l.body.collect {
-      case x if b(x) => new CharacterInfraction(l.row, l.strBody)
+    if (l.newline == Newline.EOF) {
+      Seq.empty
+    } else {
+      sc.newlinePredicate(l.newline) match {
+        case false => Seq(new NewlineInfraction(l.row, l.toString))
+        case true  => Seq.empty
+      }
     }
   }
 }
