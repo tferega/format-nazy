@@ -2,8 +2,9 @@
 cd `dirname $0`
 
 ## START JVM PARAMS
-JVM_PARAMS="-Xss2m -Xmx712m -XX:MaxPermSize=256m -XX:+CMSClassUnloadingEnabled"
+JVM_PARAMS="-Xss2m -Xmx1g -XX:MaxPermSize=256m -XX:+CMSClassUnloadingEnabled"
 
+LIFT_RUN_MODE="-Drun.mode=development"
 TRY_JREBEL=true
 LOG_LEVEL=
 NO_PAUSE=false
@@ -15,6 +16,15 @@ do
     "--debug")
       echo "Setting debug mode"
       LOG_LEVEL="\"set logLevel:=Level.Debug\""
+      ;;
+    "--prod")
+      echo "Set Lift mode to Production"
+      LIFT_RUN_MODE="-Drun.mode=production"
+      ;;
+    "~lift")
+      echo "Firing up Jetty ..."
+      SBT_PARAMS="$SBT_PARAMS container:start ~compile container:stop"
+      JREBEL_PLUGINS="$JREBEL_PLUGINS -Drebel.lift_plugin=true"
       ;;
     "--no-jrebel")
       echo "Disabling JRebel for faster compilation"
@@ -36,20 +46,13 @@ do
 
 done
 
-JVM_PARAMS="$JVM_PARAMS"
+JVM_PARAMS="$JVM_PARAMS $LIFT_RUN_MODE"
 if $TRY_JREBEL && [ -n "$JREBEL_HOME" ] && [ -f $JREBEL_HOME/jrebel.jar ]; then
   JVM_PARAMS="$JVM_PARAMS -noverify -javaagent:$JREBEL_HOME/jrebel.jar $JREBEL_PLUGINS"
 fi
 
-STRAP="project/strap"
-SBT_PATH="$STRAP/sbt-launch-0.11.0.jar"
-SBT_PARAMS="$LOG_LEVEL $SBT_PARAMS"
-
-SBT_URL="http://typesafe.artifactoryonline.com/typesafe/ivy-releases/org.scala-tools.sbt/sbt-launch/0.11.0/sbt-launch.jar"
-GRUJ_PATH="$STRAP/gruj.jar"
-GRUJ_PARAMS="$GRUJ_PATH -c5B15BA0FC63E355D47293DEF4BC2E58DA6F03787 -d $SBT_URL $SBT_PATH $SBT_PARAMS"
-
-RUN_CMD="java $JVM_PARAMS -jar $GRUJ_PARAMS"
+GRUJ_PATH="project/strap/gruj_vs_sbt-launch-0.11.2.jar"
+RUN_CMD="java $JVM_PARAMS -jar $GRUJ_PATH $LOG_LEVEL $SBT_PARAMS"
 
 LOOPING=true
 while $LOOPING
