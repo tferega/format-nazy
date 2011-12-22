@@ -44,13 +44,13 @@ case class Replacement(file: Path, orig: Array[Byte], body: Array[Byte], codec: 
 }
 
 object Main {
-  def main(args2: Array[String]) {
-
-    val args = Array("""d:\Code\Templater\""")
+  def main(args: Array[String]) {
 
     val base = FileSystem.default(args.head)
     val all =
       processScalaFiles(base) ++
+      processJavaFiles(base) ++
+      processPhpFiles(base) ++
       processCsFiles(base) ++
       processBatFiles(base) ++
       processBashFiles(base)
@@ -64,6 +64,40 @@ object Main {
 
   def processScalaFiles(base: Path) = {
     (base **  "*.scala").toStream.map{ file =>
+      val orig =
+        file.byteArray
+
+      val body =
+        new String(orig, "UTF-8")
+        .split("(\r\n|[\r\n])")
+        .map(_.replaceAll("""^(.*?)\s+$""", "$1"))
+        .map(_.replaceAll("\t", "  "))
+        .mkString("", "\n", "\n")
+        .getBytes("UTF-8")
+
+      new Replacement(file, orig, body, Codec.UTF8)
+    }
+  }
+
+  def processJavaFiles(base: Path) = {
+    (base **  "*.java").toStream.map{ file =>
+      val orig =
+        file.byteArray
+
+      val body =
+        new String(orig, "UTF-8")
+        .split("(\r\n|[\r\n])")
+        .map(_.replaceAll("""^(.*?)\s+$""", "$1"))
+        .map(_.replaceAll("\t", "  "))
+        .mkString("", "\n", "\n")
+        .getBytes("UTF-8")
+
+      new Replacement(file, orig, body, Codec.UTF8)
+    }
+  }
+
+  def processPhpFiles(base: Path) = {
+    (base **  "*.java").toStream.map{ file =>
       val orig =
         file.byteArray
 
