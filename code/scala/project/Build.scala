@@ -62,18 +62,18 @@ object Resolvers {
 object Dependencies {
   val etb = "hr.element.etb" %% "etb" % "0.1.22"
   val configrity = "org.streum" %% "configrity" % "0.9.0"
-  
+
   val commonsIo = "commons-io" % "commons-io" % "2.1"
   val commonsCodec = "commons-codec" % "commons-codec" % "1.6"
 
-  val scalaIo = "com.github.scala-incubator.io" %% "scala-io-file" % "0.2.0" 
+  val scalaIo = "com.github.scala-incubator.io" %% "scala-io-file" % "0.2.0"
   val diffUtils = "com.googlecode.java-diff-utils" % "diffutils" % "1.2.1"
-  
+
   val scalatest = "org.scalatest" %% "scalatest" % "1.6.1" % "test"
 
   val depsCore = Seq(
     commonsIo,
-    commonsCodec,    
+    commonsCodec,
     etb,
     configrity,
 
@@ -84,10 +84,10 @@ object Dependencies {
   val depsNld = Seq(
     scalaIo,
     diffUtils,
-    
+
     // test
     scalatest
-  ) 
+  )
 }
 
 

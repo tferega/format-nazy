@@ -52,6 +52,7 @@ object Main {
       processJavaFiles(base) ++
       processPhpFiles(base) ++
       processCsFiles(base) ++
+      processTxtFiles(base) ++
       processBatFiles(base) ++
       processBashFiles(base)
 
@@ -149,6 +150,22 @@ object Main {
 
   def processCsFiles(base: Path) = {
     (base **  "*.cs" --- base ** "AssemblyInfo.cs").toStream.map{ file =>
+      val orig =
+        file.byteArray
+
+      val body =
+        new String(orig, "UTF-8")
+        .split("(\r\n|[\r\n])")
+        .map(_.replaceAll("""^(.*?)\s+$""", "$1"))
+        .mkString("", "\n", "\n")
+        .getBytes("UTF-8")
+
+      new Replacement(file, orig, body, Codec("UTF-8"))
+    }
+  }
+
+  def processTxtFiles(base: Path) = {
+    (base **  "*.txt").toStream.map{ file =>
       val orig =
         file.byteArray
 

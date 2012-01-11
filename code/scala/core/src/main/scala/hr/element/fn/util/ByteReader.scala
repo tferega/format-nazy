@@ -33,4 +33,3 @@ class ByteReader(val bytes: Array[Byte], override val offset: Int) extends Reade
 
   override def toString = "ByteReader(%d / %d)".format(offset, bytes.length)
 }
-
